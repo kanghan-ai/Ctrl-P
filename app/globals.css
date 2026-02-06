@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-black;
+  }
+
+  body {
+    @apply bg-white text-black antialiased;
+  }
+}
+
+@layer utilities {
+  .brutal-hover {
+    @apply transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1;
+  }
+
+  .minimal-card-hover {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .minimal-card-hover:hover {
+    @apply shadow-soft -translate-y-1;
+  }
+}
