@@ -191,7 +191,7 @@ function DashboardContent() {
                         const reader = new FileReader();
                         reader.onload = (event) => {
                             const base64 = event.target?.result as string;
-                            handleCreate('gallery', { image: base64, title: 'New Image Prompt' });
+                            handleCreate('gallery', { images: [base64], title: 'New Image Prompt' });
                         };
                         reader.readAsDataURL(blob);
                         e.preventDefault();
