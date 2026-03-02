@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Lora, Nunito, Comfortaa } from "next/font/google"; // Import Comfortaa
 import "./globals.css";
+import { AuthProvider } from "@/components/auth/auth-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
@@ -19,7 +20,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="zh-CN">
-            <body className={`${inter.variable} ${lora.variable} ${nunito.variable} ${comfortaa.variable} font-sans`}>{children}</body>
+            <body className={`${inter.variable} ${lora.variable} ${nunito.variable} ${comfortaa.variable} font-sans`}>
+                <AuthProvider>{children}</AuthProvider>
+            </body>
         </html>
     );
 }

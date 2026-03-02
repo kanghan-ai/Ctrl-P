@@ -2,16 +2,27 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import MagicalEditor from './magical-editor';
+import { supabase } from '@/lib/supabase';
 
 export default function HeroSection() {
+    const router = useRouter();
+
+    const handleGetStarted = () => {
+        // 游客模式: 直接进入 Dashboard,无需登录
+        router.push('/dashboard');
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-6 py-24 lg:py-32">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 {/* Left Column: Typography */}
                 <div className="flex flex-col lg:col-span-7">
                     {/* Eyebrow */}
+
+
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -30,7 +41,7 @@ export default function HeroSection() {
                         transition={{ duration: 0.8, delay: 0.1 }}
                         className="text-5xl md:text-6xl lg:text-7xl font-black leading-normal text-gray-900 mb-12"
                     >
-                        Don't just paste.
+                        Don&apos;t just paste.
                         <br />
                         Structure it.
                     </motion.h1>
@@ -60,7 +71,6 @@ export default function HeroSection() {
                         </motion.p>
                     </div>
 
-                    {/* CTA Button */}
                     {/* CTA Buttons */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -68,17 +78,18 @@ export default function HeroSection() {
                         transition={{ duration: 0.6, delay: 0.4 }}
                         className="flex items-center gap-4"
                     >
-                        <Link href="/dashboard">
-                            <motion.button
-                                whileHover={{ scale: 1.02, boxShadow: '0 10px 40px rgba(0,0,0,0.15)' }}
-                                whileTap={{ scale: 0.98 }}
-                                className="bg-gray-900 text-white px-8 py-4 rounded-full text-base font-semibold flex items-center gap-2 shadow-lg transition-transform"
-                            >
-                                Get Started
-                                <ArrowRight className="w-5 h-5" />
-                            </motion.button>
-                        </Link>
+                        {/* Get Started Button - 智能跳转 */}
+                        <motion.button
+                            onClick={handleGetStarted}
+                            whileHover={{ scale: 1.02, boxShadow: '0 10px 40px rgba(0,0,0,0.15)' }}
+                            whileTap={{ scale: 0.98 }}
+                            className="bg-gray-900 text-white px-8 py-4 rounded-full text-base font-semibold flex items-center gap-2 shadow-lg transition-transform cursor-pointer"
+                        >
+                            Get Started
+                            <ArrowRight className="w-5 h-5" />
+                        </motion.button>
 
+                        {/* The Story Button */}
                         <Link href="/story">
                             <motion.button
                                 whileHover={{ scale: 1.02 }}

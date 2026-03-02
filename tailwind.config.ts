@@ -28,6 +28,21 @@ const config: Config = {
                 serif: ['var(--font-lora)', 'Songti SC', 'Noto Serif SC', 'serif'],
                 rounded: ['var(--font-comfortaa)', 'system-ui', 'sans-serif'], // Update rounded to Comfortaa
             },
+            animation: {
+                'pulse-ring': 'pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+            keyframes: {
+                'pulse-ring': {
+                    '0%, 100%': {
+                        transform: 'scale(1)',
+                        opacity: '0.8'
+                    },
+                    '50%': {
+                        transform: 'scale(1.05)',
+                        opacity: '0.4'
+                    },
+                },
+            },
         },
     },
     plugins: [],

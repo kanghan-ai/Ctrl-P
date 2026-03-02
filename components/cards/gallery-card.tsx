@@ -14,6 +14,7 @@ export default function GalleryCard({ data, onEdit }: GalleryCardProps) {
     return (
         <motion.div
             className="col-span-2 row-span-2"
+            data-guide="card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -27,7 +28,7 @@ export default function GalleryCard({ data, onEdit }: GalleryCardProps) {
                     <div className="w-1/3 relative p-4 flex items-center justify-center border-r border-neutral-100 overflow-hidden perspective-1000">
                         <div className="relative w-full aspect-square flex items-center justify-center transition-transform duration-500 ease-out -rotate-2 scale-95 group-hover:rotate-0 group-hover:scale-105">
                             <img
-                                src={data.images?.[0]}
+                                src={data.images?.[0] || ''}
                                 alt={data.title}
                                 className="w-full h-full object-cover shadow-[2px_2px_8px_rgba(0,0,0,0.08)]"
                             />
@@ -57,7 +58,7 @@ export default function GalleryCard({ data, onEdit }: GalleryCardProps) {
                                         {model.trim()}
                                     </span>
                                 ))}
-                                {data.tags.map((tag, index) => (
+                                {data.tags?.map((tag, index) => (
                                     <span
                                         key={index}
                                         className="px-3 py-1 bg-white text-neutral-500 text-xs font-medium rounded-full border border-neutral-200 shadow-sm"

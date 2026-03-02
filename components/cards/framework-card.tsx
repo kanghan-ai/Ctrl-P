@@ -25,6 +25,7 @@ export default function FrameworkCard({ data, onEdit }: FrameworkCardProps) {
     return (
         <motion.div
             className={`${spanClass} ${heightClass}`}
+            data-guide="card"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
@@ -36,7 +37,7 @@ export default function FrameworkCard({ data, onEdit }: FrameworkCardProps) {
                 <CardHeader className="pb-4 pt-5 px-5 border-b border-neutral-100 flex flex-row items-center justify-between space-y-0 shrink-0">
                     <div className="flex items-center gap-2 text-neutral-400">
                         <Box className="w-4 h-4" />
-                        <span className="text-xs font-bold tracking-widest uppercase">Framework</span>
+                        <span className="text-xs font-bold tracking-widest uppercase">Patterns</span>
                     </div>
                 </CardHeader>
 
@@ -56,7 +57,7 @@ export default function FrameworkCard({ data, onEdit }: FrameworkCardProps) {
 
                     <div className="mt-5 flex items-center gap-2 shrink-0">
                         <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-                        <span className="text-sm text-neutral-400 font-medium">{data.frameworkName}</span>
+                        <span className="text-sm text-neutral-400 font-medium">{data.patternType}</span>
                     </div>
                 </CardContent>
             </Card>

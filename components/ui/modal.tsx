@@ -9,12 +9,13 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
-    maxWidth?: 'max-w-lg' | 'max-w-2xl' | 'max-w-3xl' | 'max-w-4xl' | 'max-w-5xl';
+    maxWidth?: string;
     hideHeader?: boolean;
 }
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg', hideHeader = false }: ModalProps) {
     const overlayRef = useRef<HTMLDivElement>(null);
+    const mouseDownTarget = useRef<EventTarget | null>(null);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -38,21 +39,35 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
         };
     }, [isOpen, onClose]);
 
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (e.target === e.currentTarget) {
+            mouseDownTarget.current = e.target;
+        }
+    };
+
+    const handleMouseUp = (e: React.MouseEvent) => {
+        if (mouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) {
+            onClose();
+        }
+        mouseDownTarget.current = null;
+    };
+
     if (!isOpen) return null;
 
     return createPortal(
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={onClose}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
         >
             <div
                 ref={overlayRef}
-                className={`bg-white rounded-2xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden`}
+                className={`bg-white rounded-2xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200 overflow-hidden cursor-default`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {!hideHeader && (
                     <div className="flex items-center justify-between p-6 border-b border-neutral-100">
-                        <h2 className="text-xl font-bold text-neutral-900">{title}</h2>
+                        <h2 className="text-xl font-serif text-neutral-900">{title}</h2>
                         <button
                             onClick={onClose}
                             className="p-2 rounded-full hover:bg-neutral-100 transition-colors text-neutral-500"

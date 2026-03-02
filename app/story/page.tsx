@@ -173,10 +173,10 @@ const sections = [
                 {/* Dev Access Pass Visual */}
                 <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className="w-full max-w-[480px] h-[220px] flex bg-white rounded-2xl shadow-2xl overflow-hidden ring-1 ring-gray-100 relative group"
+                    className="w-full max-w-[450px] h-[220px] flex bg-white rounded-2xl shadow-2xl overflow-hidden ring-1 ring-gray-100 relative group"
                 >
-                    {/* Left: Identity Section (70%) */}
-                    <div className="w-[70%] p-6 flex flex-col justify-between relative bg-white">
+                    {/* Identity Section */}
+                    <div className="w-full p-6 flex flex-col justify-between relative bg-white">
                         {/* Status Header */}
                         <div className="flex items-center gap-2">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -185,14 +185,18 @@ const sections = [
 
                         {/* Profile Info */}
                         <div className="flex items-center gap-4">
-                            <div className="relative w-16 h-16 shrink-0">
+                            <Link
+                                href="https://www.xiaohongshu.com/user/profile/5b40d831e8ac2b17ae9c39c2"
+                                target="_blank"
+                                className="relative w-16 h-16 shrink-0 block cursor-pointer group/avatar"
+                            >
                                 <Image
                                     src="/avatar.jpg"
                                     alt="Kang Han"
                                     fill
-                                    className="object-cover rounded-full ring-2 ring-gray-100"
+                                    className="object-cover rounded-full ring-2 ring-gray-100 group-hover/avatar:scale-105 group-hover/avatar:shadow-md transition-all duration-300"
                                 />
-                            </div>
+                            </Link>
                             <div>
                                 <h3 className="font-serif font-bold text-xl text-gray-900 leading-tight">Kang Han</h3>
                                 <p className="font-sans text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-1">CS SENIOR & AI PRODUCT</p>
@@ -207,37 +211,6 @@ const sections = [
                                 </span>
                             ))}
                         </div>
-
-                        {/* Divider Line & Notches */}
-                        <div className="absolute right-0 top-0 bottom-0 w-px border-r-2 border-dashed border-gray-200 transform translate-x-[1px]"></div>
-                        <div className="absolute -right-2 top-[-6px] w-4 h-4 bg-white rounded-full z-10"></div>
-                        <div className="absolute -right-2 bottom-[-6px] w-4 h-4 bg-white rounded-full z-10"></div>
-                    </div>
-
-                    {/* Right: Stub Section (30%) */}
-                    <div className="w-[30%] bg-gray-50 p-6 flex flex-col items-center justify-between border-l border-white relative">
-                        <span
-                            className="text-[10px] font-mono font-bold text-gray-200 tracking-widest absolute top-6 right-2 whitespace-nowrap"
-                            style={{ writingMode: 'vertical-rl' }}
-                        >
-                            Kkphoto041
-                        </span>
-
-                        <div className="mt-2 text-gray-900 w-full flex justify-center">
-                            <div className="flex items-center justify-center p-2 bg-white rounded-lg border border-gray-200">
-                                <QrCode className="w-8 h-8 opacity-80" />
-                            </div>
-                        </div>
-
-                        <Link
-                            href="https://www.xiaohongshu.com/user/profile/5b40d831e8ac2b17ae9c39c2"
-                            target="_blank"
-                            className="flex flex-col items-center group/link"
-                        >
-                            <div className="p-2 bg-white rounded-full text-gray-400 group-hover/link:text-red-500 group-hover/link:bg-red-50 transition-colors shadow-sm">
-                                <ArrowRight className="w-4 h-4" />
-                            </div>
-                        </Link>
                     </div>
                 </motion.div>
             </div>

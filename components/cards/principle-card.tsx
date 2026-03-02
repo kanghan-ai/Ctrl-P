@@ -12,6 +12,7 @@ export default function PrincipleCard({ data, onEdit }: PrincipleCardProps) {
     return (
         <motion.div
             className="col-span-1 row-span-1"
+            data-guide="card"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}

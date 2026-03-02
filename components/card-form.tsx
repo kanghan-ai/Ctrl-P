@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { CardData, GalleryCardData, FrameworkCardData, PrincipleCardData } from '@/lib/mock-data';
+import { useAuth } from '@/components/auth/auth-provider';
+import { ImageUpload } from '@/components/image-upload';
 
 interface CardFormProps {
     initialData?: Partial<CardData> | null;
@@ -11,11 +13,23 @@ interface CardFormProps {
 }
 
 export default function CardForm({ initialData, type, onSubmit, onCancel }: CardFormProps) {
+    const { user } = useAuth();
     const [formData, setFormData] = useState<Partial<CardData>>({});
     const [previewIndex, setPreviewIndex] = useState<number | null>(null);
-    const [isEditing, setIsEditing] = useState(!initialData);
+    // Open in edit mode if: no initialData OR initialData exists but has no id (new card with prefilled data)
+    const [isEditing, setIsEditing] = useState(!initialData || !('id' in initialData));
     const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null); // Changed to track specific index
-    const [isCopied, setIsCopied] = useState(false); // Feedback state for Copy button
+    // Use string to track which specific field was copied
+    const [copiedField, setCopiedField] = useState<string | null>(null);
+    // 图片上传状态
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+
+    const handleCopy = (text: string, fieldId: string) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(fieldId);
+        setTimeout(() => setCopiedField(null), 2000);
+    };
 
     // Helper to append to comma-separated string
     const appendValue = (current: string, next: string) => {
@@ -41,9 +55,9 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                 });
             } else if (baseType === 'framework') {
                 setFormData({
-                    type: 'framework',
+                    type: 'framework', // Keeping internal type as 'framework' to avoid breaking DB/card logic
                     title: '',
-                    frameworkName: '',
+                    patternType: 'Structure', // Default to Structure
                     code: '',
                     layout: 'horizontal'
                 });
@@ -70,7 +84,7 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
         if ('title' in formData && formData.title) return formData.title;
         // Otherwise show type-based default
         if (formData.type === 'gallery') return 'New Image Prompt';
-        if (formData.type === 'framework') return 'New Framework';
+        if (formData.type === 'framework') return 'New Pattern';
         if (formData.type === 'principle') return (formData as PrincipleCardData).words || 'New Principle';
         return 'Card Details';
     };
@@ -190,6 +204,8 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
         const imageList = (formData as GalleryCardData).images || [];
         const currentModel = (formData as GalleryCardData).model || '';
         const currentTags = ((formData as GalleryCardData).tags || []).join(', ');
+        const modelItems = currentModel.split(',').map((item) => item.trim()).filter(Boolean);
+        const tagItems = (formData as GalleryCardData).tags || [];
         const currentSource = (formData as GalleryCardData).source || '';
         const currentSourceUrl = (formData as GalleryCardData).sourceUrl || '';
 
@@ -265,7 +281,11 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                                     `}
                                     onClick={() => !isEditing && setPreviewIndex(idx)}
                                 >
-                                    <img src={img} alt={`Preview ${idx}`} className="h-full w-auto object-contain" />
+                                    <img
+                                        src={img}
+                                        alt={`Preview ${idx}`}
+                                        className="h-full w-auto object-contain"
+                                    />
 
                                     {/* Edit Mode Deletion Overlay */}
                                     {isEditing && (
@@ -297,30 +317,87 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                             ))}
                             {/* Add Image Button - Only in Edit Mode */}
                             {isEditing && (
-                                <label className="h-24 sm:h-32 w-24 sm:w-32 bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all flex flex-col items-center justify-center cursor-pointer text-neutral-400 hover:text-neutral-600 gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path d="M12 8v8" /></svg>
-                                    <span className="text-xs font-medium">Add Image</span>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                        className="hidden"
-                                        onChange={(e) => {
-                                            const files = Array.from(e.target.files || []);
-                                            if (files.length > 0) {
-                                                Promise.all(files.map(file => new Promise<string>((resolve) => {
-                                                    const reader = new FileReader();
-                                                    reader.onloadend = () => resolve(reader.result as string);
-                                                    reader.readAsDataURL(file);
-                                                }))).then(newImgs => {
-                                                    handleChange('images', [...imageList, ...newImgs]);
-                                                });
-                                            }
-                                        }}
-                                    />
-                                </label>
+                                <div className="h-24 sm:h-32 w-24 sm:w-32">
+                                    {user ? (
+                                        // 登录用户: 使用 Supabase Storage 上传
+                                        <label className="h-full w-full bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all flex flex-col items-center justify-center cursor-pointer text-neutral-400 hover:text-neutral-600 gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path d="M12 8v8" /></svg>
+                                            <span className="text-xs font-medium">Upload</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                disabled={uploadingImage}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+
+                                                    try {
+                                                        setUploadingImage(true);
+                                                        setUploadError(null);
+
+                                                        // 动态导入上传函数
+                                                        const { uploadPromptImage } = await import('@/lib/image-upload');
+                                                        const imageUrl = await uploadPromptImage(file, user.id);
+
+                                                        // 添加到图片列表
+                                                        handleChange('images', [...imageList, imageUrl]);
+                                                        e.target.value = ''; // 重置输入
+                                                    } catch (error) {
+                                                        const errorMsg = error instanceof Error ? error.message : '上传失败';
+                                                        setUploadError(errorMsg);
+                                                        console.error('图片上传失败:', error);
+                                                    } finally {
+                                                        setUploadingImage(false);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    ) : (
+                                        // 游客模式: 使用 IndexedDB
+                                        <label className="h-full w-full bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 hover:border-neutral-400 hover:bg-neutral-100 transition-all flex flex-col items-center justify-center cursor-pointer text-neutral-400 hover:text-neutral-600 gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path d="M12 8v8" /></svg>
+                                            <span className="text-xs font-medium">Add Image</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                disabled={uploadingImage}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+
+                                                    // 创建 blob URL 用于表单内即时预览
+                                                    const previewURL = URL.createObjectURL(file);
+
+                                                    // 更新 images[]（展示用）和 imageFiles[]（持久化用）
+                                                    const currentImages = (formData as GalleryCardData).images ?? [];
+                                                    const currentFiles = (formData as GalleryCardData).imageFiles ?? [];
+                                                    handleChange('images', [...currentImages, previewURL]);
+                                                    handleChange('imageFiles', [...currentFiles, file]);
+                                                    e.target.value = ''; // 重置输入
+                                                }}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
                             )}
                         </div>
+                        {/* 上传状态提示 */}
+                        {uploadingImage && (
+                            <div className="text-xs text-neutral-500 flex items-center gap-2">
+                                <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                正在上传并压缩图片...
+                            </div>
+                        )}
+                        {uploadError && (
+                            <div className="text-xs text-red-600">
+                                ❌ {uploadError}
+                            </div>
+                        )}
                         {/* URL Paste Fallback - Only in Edit Mode */}
                         {isEditing && (
                             <div className="flex gap-2">
@@ -383,43 +460,54 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                             </div>
                         )}
 
-                        {/* Model & Tags Row - Changed to Stacked Layout */}
+                        {/* Model & Tags Row - Chip-based Input */}
                         <div className="flex flex-col gap-4">
                             {/* Model Selection */}
                             <div>
                                 <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Model</label>
                                 {isEditing ? (
-                                    <div className="relative group">
+                                    <div className={modelItems.length > 0 ? 'space-y-2' : ''}>
+                                        {modelItems.length > 0 && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {modelItems.map((item, i) => (
+                                                    <span key={i} className="group/chip inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 text-neutral-800 rounded-lg text-xs font-semibold border border-neutral-200 hover:border-neutral-300 transition-colors">
+                                                        {item.trim()}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const items = currentModel.split(',').map((entry) => entry.trim()).filter(Boolean);
+                                                                items.splice(i, 1);
+                                                                handleChange('model', items.join(', '));
+                                                            }}
+                                                            className="opacity-50 hover:opacity-100 hover:text-red-600 transition-all"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                         <input
                                             type="text"
                                             className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all placeholder:text-neutral-400"
-                                            value={currentModel}
-                                            onChange={(e) => handleChange('model', e.target.value)}
-                                            placeholder="Select or type..."
+                                            placeholder="Type and press Enter or comma to add..."
+                                            onKeyDown={(e) => {
+                                                const val = e.currentTarget.value.trim();
+                                                if ((e.key === 'Enter' || e.key === ',') && val) {
+                                                    e.preventDefault();
+                                                    const current = currentModel ? currentModel + ', ' + val : val;
+                                                    handleChange('model', current);
+                                                    e.currentTarget.value = '';
+                                                } else if (e.key === ',' && !val) {
+                                                    e.preventDefault(); // Prevent empty comma
+                                                }
+                                            }}
                                         />
-                                        {/* Suggestions */}
-                                        <div className="hidden group-hover:block absolute top-full left-0 right-0 pt-2 z-20">
-                                            <div className="bg-white border border-neutral-200 rounded-xl shadow-xl p-2">
-                                                <p className="text-[10px] uppercase text-neutral-400 font-bold mb-2 px-1">Suggested</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {['Midjourney v6', 'Midjourney v5.2', 'Stable Diffusion XL', 'DALL-E 3', 'Niji 6'].map(opt => (
-                                                        <button
-                                                            key={opt}
-                                                            type="button"
-                                                            className="px-2 py-1 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border border-neutral-100 rounded-lg text-xs transition-colors"
-                                                            onClick={() => handleChange('model', appendValue(currentModel, opt))}
-                                                        >
-                                                            {opt}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 ) : (
                                     <div className="flex flex-wrap gap-2">
-                                        {currentModel ? (
-                                            currentModel.split(',').map((item, i) => (
+                                        {modelItems.length > 0 ? (
+                                            modelItems.map((item, i) => (
                                                 <span key={i} className="px-3 py-1.5 bg-white text-neutral-800 rounded-sm text-xs font-semibold border border-neutral-200 shadow-sm">
                                                     {item.trim()}
                                                 </span>
@@ -435,46 +523,50 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                             <div>
                                 <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Tags</label>
                                 {isEditing ? (
-                                    <div className="relative group">
+                                    <div className={tagItems.length > 0 ? 'space-y-2' : ''}>
+                                        {tagItems.length > 0 && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {tagItems.map((tag, i) => (
+                                                    <span key={i} className="group/chip inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 text-neutral-800 rounded-lg text-xs font-semibold border border-neutral-200 hover:border-neutral-300 transition-colors">
+                                                        {tag}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newTags = [...tagItems];
+                                                                newTags.splice(i, 1);
+                                                                handleChange('tags', newTags);
+                                                            }}
+                                                            className="opacity-50 hover:opacity-100 hover:text-red-600 transition-all"
+                                                        >
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                         <input
                                             type="text"
                                             className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all placeholder:text-neutral-400"
-                                            value={currentTags}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                const newTags = val.split(',').map(s => s.trim());
-                                                handleChange('tags', newTags);
+                                            placeholder="Type and press Enter or comma to add..."
+                                            onKeyDown={(e) => {
+                                                const val = e.currentTarget.value.trim();
+                                                if ((e.key === 'Enter' || e.key === ',') && val) {
+                                                    e.preventDefault();
+                                                    const currentTags = (formData as GalleryCardData).tags || [];
+                                                    handleChange('tags', [...currentTags, val]);
+                                                    e.currentTarget.value = '';
+                                                } else if (e.key === ',' && !val) {
+                                                    e.preventDefault(); // Prevent empty comma
+                                                }
                                             }}
-                                            placeholder="e.g. Cyberpunk..."
                                         />
-                                        {/* Suggestions Dropdown */}
-                                        <div className="hidden group-hover:block absolute top-full left-0 right-0 pt-2 z-20">
-                                            <div className="bg-white border border-neutral-200 rounded-xl shadow-xl p-2">
-                                                <p className="text-[10px] uppercase text-neutral-400 font-bold mb-2 px-1">Suggested</p>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {['Minimalist', 'Cyberpunk', 'Realistic', 'Anime', '3D Render', 'Photography', 'Oil Painting', 'Cinematic'].map(tag => (
-                                                        <button
-                                                            key={tag}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newVal = appendValue(currentTags, tag);
-                                                                handleChange('tags', newVal.split(',').map(s => s.trim()).filter(Boolean));
-                                                            }}
-                                                            className="px-2 py-1 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 border border-neutral-100 rounded-lg text-xs transition-colors"
-                                                        >
-                                                            {tag}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 ) : (
                                     <div className="flex flex-wrap gap-2">
-                                        {currentTags ? (
-                                            currentTags.split(',').map((tag, i) => (
+                                        {tagItems.length > 0 ? (
+                                            tagItems.map((tag, i) => (
                                                 <span key={i} className="px-3 py-1.5 bg-white text-neutral-800 rounded-sm text-xs font-semibold border border-neutral-200 shadow-sm">
-                                                    {tag.trim()}
+                                                    {tag}
                                                 </span>
                                             ))
                                         ) : (
@@ -508,15 +600,11 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                                 {/* Floating Copy Button */}
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        navigator.clipboard.writeText((formData as GalleryCardData).description || '');
-                                        setIsCopied(true);
-                                        setTimeout(() => setIsCopied(false), 2000);
-                                    }}
+                                    onClick={() => handleCopy((formData as GalleryCardData).description || '', 'gallery-desc')}
                                     className="absolute top-4 right-4 p-2 bg-white hover:bg-neutral-50 text-neutral-600 rounded-lg shadow-sm transition-all border border-neutral-200 opacity-0 group-hover:opacity-100 flex items-center gap-2"
                                     title="Copy to clipboard"
                                 >
-                                    {isCopied ? (
+                                    {copiedField === 'gallery-desc' ? (
                                         <>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12" /></svg>
                                             <span className="text-xs font-bold text-green-500">Copied</span>
@@ -541,6 +629,7 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
         const currentSource = (formData as FrameworkCardData).source || '';
         const currentSourceUrl = (formData as FrameworkCardData).sourceUrl || '';
         const currentExample = (formData as FrameworkCardData).example || '';
+        const currentExplanation = (formData as FrameworkCardData).explanation || '';
 
         return (
             <div className="flex flex-col gap-6 h-full">
@@ -557,6 +646,12 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                             >
                                 @{currentSource}
                             </a>
+                        )}
+                        {!isEditing && (formData as FrameworkCardData).patternType && (
+                            <div className="flex items-center gap-2 px-3 py-1 bg-neutral-100 rounded-full border border-neutral-200 ml-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                <span className="text-xs font-bold uppercase text-neutral-600 tracking-wide">{(formData as FrameworkCardData).patternType}</span>
+                            </div>
                         )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -595,7 +690,7 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                                 className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all placeholder:text-neutral-400"
                                 value={(formData as FrameworkCardData).title || ''}
                                 onChange={(e) => handleChange('title', e.target.value)}
-                                placeholder="Enter framework title..."
+                                placeholder="Enter pattern title..."
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -645,6 +740,53 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                                 </button>
                             </div>
                         </div>
+                        <div>
+                            <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Explanation</label>
+                            <textarea
+                                className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all min-h-[60px] resize-y"
+                                value={currentExplanation}
+                                onChange={(e) => handleChange('explanation', e.target.value)}
+                                placeholder="Brief explanation of the framework..."
+                            />
+                        </div>
+                        {/* Pattern Category Selection */}
+                        <div>
+                            <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Pattern Category</label>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex gap-2">
+                                    {['Structure', 'Skill'].map((type) => (
+                                        <button
+                                            key={type}
+                                            type="button"
+                                            onClick={() => handleChange('patternType', type)}
+                                            className={`px-3 py-1.5 text-sm font-medium rounded-md border transition-all ${(formData as FrameworkCardData).patternType === type
+                                                ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm'
+                                                : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                                                }`}
+                                        >
+                                            {type}
+                                        </button>
+                                    ))}
+                                </div>
+                                <input
+                                    type="text"
+                                    className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all placeholder:text-neutral-400"
+                                    value={(formData as FrameworkCardData).patternType || ''}
+                                    onChange={(e) => handleChange('patternType', e.target.value)}
+                                    placeholder="Or type custom category..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* View Mode Explanation (Styled like Principle Sentence) */}
+                {!isEditing && currentExplanation && (
+                    <div className="shrink-0 mb-4">
+                        <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Explanation</label>
+                        <div className="text-lg font-medium text-neutral-900 border-l-4 border-neutral-200 pl-4 py-1">
+                            {currentExplanation}
+                        </div>
                     </div>
                 )}
 
@@ -668,6 +810,25 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                             ) : (
                                 <div className="relative w-full h-full p-6 bg-neutral-100 border border-neutral-200 rounded-xl text-sm leading-relaxed overflow-y-auto text-neutral-700">
                                     {formatPromptText(currentCode)}
+                                    {/* Floating Copy Button for Code */}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleCopy(currentCode, 'framework-code')}
+                                        className="absolute top-4 right-4 p-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 rounded-lg shadow-sm transition-all border border-neutral-200 opacity-0 group-hover:opacity-100 flex items-center gap-2"
+                                        title="Copy structure"
+                                    >
+                                        {copiedField === 'framework-code' ? (
+                                            <>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12" /></svg>
+                                                <span className="text-xs font-bold text-green-500">Copied</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="8" width="12" height="12" rx="2" ry="2"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
+                                                <span className="text-xs font-medium">Copy</span>
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -694,15 +855,11 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                                     {currentExample && (
                                         <button
                                             type="button"
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(currentExample);
-                                                setIsCopied(true);
-                                                setTimeout(() => setIsCopied(false), 2000);
-                                            }}
+                                            onClick={() => handleCopy(currentExample, 'framework-example')}
                                             className="absolute top-4 right-4 p-2 bg-white hover:bg-neutral-50 text-neutral-600 rounded-lg shadow-sm transition-all border border-neutral-200 opacity-0 group-hover:opacity-100 flex items-center gap-2"
                                             title="Copy example"
                                         >
-                                            {isCopied ? (
+                                            {copiedField === 'framework-example' ? (
                                                 <>
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><polyline points="20 6 9 17 4 12" /></svg>
                                                     <span className="text-xs font-bold text-green-500">Copied</span>
