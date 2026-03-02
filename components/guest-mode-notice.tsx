@@ -52,7 +52,8 @@ export default function GuestModeNotice() {
                 {/* Content */}
                 <ul className="px-10 space-y-4 mb-8 text-left list-disc list-outside ml-4 marker:text-neutral-400">
                     <li className="text-base text-neutral-600 leading-relaxed pl-1">
-                        Data is stored <span className="font-medium text-neutral-900">locally in your browser</span>.
+                        You&apos;re currently in <span className="font-bold underline decoration-yellow-400/50">Viewer Mode</span>.
+                        Your prompts are saved to your browser&apos;s local storage.
                     </li>
                     <li className="text-base text-neutral-600 leading-relaxed pl-1">
                         Clearing your cache will <span className="font-medium text-neutral-900 border-b border-neutral-200">permanently delete your data</span>.

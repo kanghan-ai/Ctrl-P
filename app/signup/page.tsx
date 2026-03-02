@@ -67,8 +67,9 @@ export default function SignupPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
+                    <p className="text-gray-500">Create an account to save your prompts to the cloud. It&apos;s free.</p>
                     <p className="text-neutral-600 mb-6 text-sm leading-relaxed">
-                        We've sent a verification link to <br /><strong className="text-neutral-900">{email}</strong>.
+                        We&apos;ve sent a verification link to <br /><strong className="text-neutral-900">{email}</strong>.
                         <br />Please check your inbox to complete the process.
                     </p>
                     <Link
