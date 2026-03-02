@@ -75,7 +75,7 @@ export default function GuestModeNotice() {
                         onClick={handleDismissForever}
                         className="text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
                     >
-                        Don't show this again
+                        Don&apos;t show this again
                     </button>
                 </div>
             </div>
