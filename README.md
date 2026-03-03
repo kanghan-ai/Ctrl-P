@@ -3,6 +3,8 @@
 > **Don't just paste. Structure it.**
 > 像管理代码一样，管理提示词。
 
+[Live Demo →](https://ctrlp-ai.vercel.app)
+
 ---
 
 ## ✨ 核心理念
