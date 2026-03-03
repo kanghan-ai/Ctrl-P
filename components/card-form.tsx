@@ -752,31 +752,23 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                         {/* Pattern Category Selection */}
                         <div>
                             <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">Pattern Category</label>
-                            <div className="flex flex-col gap-2">
-                                <div className="flex gap-2">
-                                    {['Structure', 'Skill'].map((type) => (
-                                        <button
-                                            key={type}
-                                            type="button"
-                                            onClick={() => handleChange('patternType', type)}
-                                            className={`px-3 py-1.5 text-sm font-medium rounded-md border transition-all ${(formData as FrameworkCardData).patternType === type
-                                                ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm'
-                                                : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
-                                                }`}
-                                        >
-                                            {type}
-                                        </button>
-                                    ))}
-                                </div>
-                                <input
-                                    type="text"
-                                    className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all placeholder:text-neutral-400"
-                                    value={(formData as FrameworkCardData).patternType || ''}
-                                    onChange={(e) => handleChange('patternType', e.target.value)}
-                                    placeholder="Or type custom category..."
-                                />
+                            <div className="flex gap-2">
+                                {['Structure', 'Skill'].map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => handleChange('patternType', type)}
+                                        className={`px-3 py-1.5 text-sm font-medium rounded-md border transition-all ${(formData as FrameworkCardData).patternType === type
+                                            ? 'bg-neutral-900 text-white border-neutral-900 shadow-sm'
+                                            : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-300'
+                                            }`}
+                                    >
+                                        {type}
+                                    </button>
+                                ))}
                             </div>
                         </div>
+
                     </div>
                 )}
 
