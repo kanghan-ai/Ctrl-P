@@ -153,8 +153,6 @@ function DashboardContent() {
                 e.preventDefault();
                 // Save current visual order to store
                 reorderCards(cardOrder);
-                // Optional: You could show a toast here
-                console.log('Layout saved!');
 
                 // Add a subtle visual feedback
                 const header = document.querySelector('header');

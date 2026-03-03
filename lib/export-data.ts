@@ -35,8 +35,6 @@ export function exportCardsToJSON(cards: CardData[], filename: string = 'cards.j
     // 清理
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-
-    console.log(`✅ 已导出 ${cards.length} 张卡片到 ${filename}`);
 }
 
 /**
@@ -53,7 +51,6 @@ export async function copyCardsToClipboard(cards: CardData[]) {
 
     try {
         await navigator.clipboard.writeText(jsonString);
-        console.log(`✅ 已复制 ${cards.length} 张卡片数据到剪贴板`);
         return true;
     } catch (error) {
         console.error('复制到剪贴板失败:', error);

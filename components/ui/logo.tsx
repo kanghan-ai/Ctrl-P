@@ -1,9 +1,5 @@
 import React from 'react';
-import { cn } from '@/lib/utils'; // Assuming you have a cn utility, if not I'll just use template literals or check for it.
-
-// Since I haven't seen lib/utils yet, I'll stick to standard template literals or create a simple utility if needed. 
-// But commonly projects have clsx/tailwind-merge. I'll verify if lib/utils exists or just write safe code.
-// I'll assume standard className prop handling for now.
+import { cn } from '@/lib/utils';
 
 interface LogoProps {
     className?: string;

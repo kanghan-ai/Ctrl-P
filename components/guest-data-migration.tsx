@@ -62,7 +62,7 @@ export default function GuestDataMigration() {
                 return;
             }
 
-            console.log(`🚀 开始迁移 ${total} 张用户卡片到云端...`);
+
 
             let successCount = 0;
             const errors: string[] = [];
@@ -115,12 +115,10 @@ export default function GuestDataMigration() {
 
                     // 生成新的唯一 ID（避免主键冲突）
                     const newId = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-                    console.log(`📦 迁移卡片 ${i + 1}/${total}: type=${card.type}, 原ID=${card.id}, 新ID=${newId}`);
                     cardToMigrate = { ...cardToMigrate, id: newId };
 
                     await addCard(cardToMigrate, true);
                     successCount++;
-                    console.log(`✅ 卡片 ${i + 1} 迁移成功`);
                     setProgress(((i + 1) / total) * 100);
                 } catch (err) {
                     console.error(`❌ 卡片 ${i + 1} 迁移失败:`, err);
@@ -129,7 +127,7 @@ export default function GuestDataMigration() {
                 }
             }
 
-            console.log(`🏁 迁移结束: 成功 ${successCount}/${total}, 失败 ${errors.length}`);
+
             if (errors.length > 0) {
                 console.warn('⚠️ 失败详情:', errors);
             }

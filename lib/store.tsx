@@ -135,13 +135,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ? { ...card } // 保留原 id（迁移场景）
             : { ...card, id: Date.now().toString() }; // 生成新 id（新建场景）
 
-        console.log('📝 addCard:', {
-            preserveId,
-            originalId: card.id,
-            finalId: newCard.id,
-            isGuest: !user
-        });
-
         // Optimistic update
         setCards(prev => [newCard, ...prev]);
 
@@ -152,7 +145,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         try {
             if (user) {
                 // 已登录: 保存到 Supabase
-                console.log('💾 保存到 Supabase:', newCard.id);
                 const response = await fetch('/api/cards', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -166,7 +158,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 }
 
                 const result = await response.json();
-                console.log('✅ 保存成功:', result);
             } else {
                 // 游客模式: 保存到 IndexedDB
                 await addLocalCard(newCard);

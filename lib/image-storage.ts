@@ -55,7 +55,6 @@ export async function saveImageToIDB(file: File | Blob): Promise<string> {
     try {
         const id = generateImageId();
         await set(id, file);
-        console.log('💾 图片已保存到 IndexedDB:', id, `(${(file.size / 1024).toFixed(2)} KB)`);
         return `${IDB_PREFIX}${id}`;
     } catch (error) {
         console.error('❌ 保存图片到 IndexedDB 失败:', error);
@@ -78,7 +77,6 @@ export async function getImageFromIDB(reference: string): Promise<Blob | null> {
             return null;
         }
 
-        console.log('📖 从 IndexedDB 读取图片:', id, `(${(blob.size / 1024).toFixed(2)} KB)`);
         return blob;
     } catch (error) {
         console.error('❌ 从 IndexedDB 读取图片失败:', error);
@@ -94,7 +92,6 @@ export async function deleteImageFromIDB(reference: string): Promise<void> {
     try {
         const id = reference.replace(IDB_PREFIX, '');
         await del(id);
-        console.log('🗑️ 图片已从 IndexedDB 删除:', id);
     } catch (error) {
         console.error('❌ 删除图片失败:', error);
         throw new Error('删除图片失败');
@@ -108,7 +105,6 @@ export async function deleteImageFromIDB(reference: string): Promise<void> {
  */
 export function createImageURL(blob: Blob): string {
     const url = URL.createObjectURL(blob);
-    console.log('🔗 创建临时 URL:', url);
     return url;
 }
 
@@ -118,7 +114,6 @@ export function createImageURL(blob: Blob): string {
  */
 export function revokeImageURL(url: string): void {
     URL.revokeObjectURL(url);
-    console.log('🧹 释放临时 URL:', url);
 }
 
 /**
@@ -151,10 +146,8 @@ export function base64ToBlob(base64: string): Blob {
  * @returns IDB 引用字符串
  */
 export async function migrateBase64ToIDB(base64: string): Promise<string> {
-    console.log('🔄 迁移 Base64 到 IndexedDB...');
     const blob = base64ToBlob(base64);
     const reference = await saveImageToIDB(blob);
-    console.log('✅ 迁移完成');
     return reference;
 }
 
@@ -182,7 +175,6 @@ export async function clearAllImages(): Promise<void> {
         for (const id of imageIds) {
             await deleteImageFromIDB(id);
         }
-        console.log('🧹 已清理所有图片');
     } catch (error) {
         console.error('❌ 清理图片失败:', error);
         throw new Error('清理图片失败');

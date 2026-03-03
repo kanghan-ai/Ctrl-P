@@ -74,7 +74,7 @@ export default function LoginPage() {
                 <input
                     id="password"
                     type="password"
-                    value={email ? password : ''} // Visual trick: hide password dots if email empty (optional, but keeps it clean) -> actually better to just show it
+                    value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}

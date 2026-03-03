@@ -79,7 +79,7 @@ export async function GET(request: Request) {
             );
         }
 
-        console.log('✅ 用户已认证:', user.id);
+
 
         // Fetch cards from Supabase (RLS will automatically filter by user_id)
         const { data: cards, error } = await supabase
@@ -93,8 +93,6 @@ export async function GET(request: Request) {
             throw error;
         }
 
-        console.log(`📦 成功加载 ${cards?.length || 0} 张卡片`);
-        // snake_case → camelCase 映射
         const clientCards = (cards || []).map(toClientCard);
         return NextResponse.json({ cards: clientCards });
     } catch (error: any) {

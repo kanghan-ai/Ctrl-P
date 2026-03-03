@@ -12,7 +12,6 @@ import { supabase } from './supabase';
  * @returns 压缩后的 Blob (WebP 格式)
  */
 export async function compressImageToWebP(file: File): Promise<Blob> {
-    console.log('🖼️ 开始压缩图片:', file.name, '原始大小:', (file.size / 1024).toFixed(2), 'KB');
 
     try {
         // 第一步: 使用 browser-image-compression 压缩
@@ -25,7 +24,6 @@ export async function compressImageToWebP(file: File): Promise<Blob> {
         };
 
         const compressedFile = await imageCompression(file, options);
-        console.log('✅ 压缩完成:', (compressedFile.size / 1024).toFixed(2), 'KB');
 
         return compressedFile;
     } catch (error) {
@@ -50,8 +48,6 @@ export async function uploadImageToStorage(
         const randomStr = Math.random().toString(36).substring(7);
         const fileName = `${userId}/${timestamp}-${randomStr}.webp`;
 
-        console.log('📤 开始上传到 Supabase Storage:', fileName);
-
         // 上传到 prompt-images bucket
         const { data, error } = await supabase.storage
             .from('prompt-images')
@@ -66,14 +62,9 @@ export async function uploadImageToStorage(
             throw error;
         }
 
-        console.log('✅ 上传成功:', data.path);
-
-        // 获取公开 URL
         const { data: { publicUrl } } = supabase.storage
             .from('prompt-images')
             .getPublicUrl(data.path);
-
-        console.log('🔗 公开 URL:', publicUrl);
 
         return publicUrl;
     } catch (error) {
@@ -134,8 +125,6 @@ export async function deletePromptImage(imageUrl: string): Promise<void> {
         if (error) {
             throw error;
         }
-
-        console.log('🗑️ 图片删除成功:', filePath);
     } catch (error) {
         console.error('❌ 删除图片失败:', error);
         throw new Error('删除图片失败');

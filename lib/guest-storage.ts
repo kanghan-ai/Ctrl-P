@@ -123,7 +123,6 @@ export async function clearGuestData(): Promise<void> {
     try {
         const { clearAllImages } = await import('./image-storage');
         await clearAllImages();
-        console.log('✅ 游客数据和图片已清除');
     } catch (error) {
         console.error('清理 IndexedDB 图片失败:', error);
     }

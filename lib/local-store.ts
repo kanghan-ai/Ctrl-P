@@ -28,7 +28,6 @@ export async function loadLocalData(): Promise<LocalStore | null> {
         const data = await get<LocalStore>(LOCAL_PROMPTS_KEY);
         return data ?? null;
     } catch (error) {
-        console.error('loadLocalData 失败:', error);
         return null;
     }
 }
@@ -128,5 +127,4 @@ export async function reorderLocalCards(newOrder: string[]): Promise<void> {
  */
 export async function clearLocalData(): Promise<void> {
     await del(LOCAL_PROMPTS_KEY);
-    console.log('✅ 本地 IndexedDB 数据已清除');
 }
