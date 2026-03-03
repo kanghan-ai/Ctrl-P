@@ -1,0 +1,6 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rounded corner radius of 15% (matching squircle logic) -->
+  <rect x="0" y="0" width="512" height="512" rx="128" fill="black"/>
+  <!-- Narrower/Thinner "P" letter in White -->
+  <path d="M190 140V372M190 140H270C308.66 140 340 171.34 340 210C340 248.66 308.66 280 270 280H190" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

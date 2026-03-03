@@ -12,14 +12,16 @@ interface LogoProps {
 
 export default function Logo({ className = '', size = 'md' }: LogoProps) {
     const sizeClasses = {
-        sm: 'w-8 h-8 text-lg',
-        md: 'w-10 h-10 text-xl',
-        lg: 'w-12 h-12 text-2xl',
+        sm: 'w-8 h-8',
+        md: 'w-10 h-10',
+        lg: 'w-12 h-12',
     };
 
     return (
-        <div className={`bg-black flex items-center justify-center text-white font-bold rounded-sm shadow-sm ${sizeClasses[size]} ${className}`}>
-            P
-        </div>
+        <img
+            src="/logo.svg"
+            alt="Logo"
+            className={cn(sizeClasses[size], className)}
+        />
     );
 }
