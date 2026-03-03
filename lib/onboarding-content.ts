@@ -28,8 +28,8 @@ export const guideSteps: GuideStep[] = [
     {
         id: 2,
         icon: '📸',
-        title: 'Image Prompt 卡片',
-        description: '按 Ctrl+V 粘贴带图片的内容，自动创建图片提示词卡片',
+        title: 'Image 卡片',
+        description: '按 Ctrl+V 粘贴带图片的内容，自动创建图片卡片',
         details: [
             '📝 标题 - 提示词名称',
             '🖼️ 图片 - 参考图或生成结果',
@@ -132,7 +132,7 @@ export const hintBarTips: HintBarTip[] = [
         id: 2,
         icon: 'LayoutGrid',
         title: '卡片类型',
-        content: '支持图库(Gallery)、模式(Patterns)、原则(Principle)三种卡片类型，满足不同需求'
+        content: '支持图片(Image)、模式(Patterns)、原则(Principle)三种卡片类型，满足不同需求'
     },
     {
         id: 3,

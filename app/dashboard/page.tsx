@@ -220,7 +220,7 @@ function DashboardContent() {
                         const reader = new FileReader();
                         reader.onload = (event) => {
                             const base64 = event.target?.result as string;
-                            handleCreate('gallery', { images: [base64], title: 'New Image Prompt' });
+                            handleCreate('gallery', { images: [base64], title: 'New Image' });
                         };
                         reader.readAsDataURL(blob);
                         e.preventDefault();
@@ -349,13 +349,13 @@ function DashboardContent() {
                                             onClick={() => handleCreate('gallery')}
                                             className="w-full text-left px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors border-b border-neutral-50"
                                         >
-                                            Image Prompt
+                                            Image
                                         </button>
                                         <button
                                             onClick={() => handleCreate('framework')}
                                             className="w-full text-left px-4 py-3 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors border-b border-neutral-50"
                                         >
-                                            Framework
+                                            Pattern
                                         </button>
                                         <button
                                             onClick={() => handleCreate('principle')}
@@ -424,7 +424,7 @@ function DashboardContent() {
                         title={
                             editingCard && 'title' in editingCard && editingCard.title
                                 ? editingCard.title
-                                : `New ${newCardType === 'gallery' ? 'Image Prompt' : newCardType === 'framework' ? 'Framework' : 'Principle'}`
+                                : `New ${newCardType === 'gallery' ? 'Image' : newCardType === 'framework' ? 'Pattern' : 'Principle'}`
                         }
                         maxWidth={
                             (editingCard?.type === 'gallery' || editingCard?.type === 'framework' || (!editingCard && (newCardType === 'gallery' || newCardType === 'framework')))

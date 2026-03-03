@@ -83,7 +83,7 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
         // If we have a title, show it
         if ('title' in formData && formData.title) return formData.title;
         // Otherwise show type-based default
-        if (formData.type === 'gallery') return 'New Image Prompt';
+        if (formData.type === 'gallery') return 'New Image';
         if (formData.type === 'framework') return 'New Pattern';
         if (formData.type === 'principle') return (formData as PrincipleCardData).words || 'New Principle';
         return 'Card Details';
@@ -746,7 +746,7 @@ export default function CardForm({ initialData, type, onSubmit, onCancel }: Card
                                 className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white transition-all min-h-[60px] resize-y"
                                 value={currentExplanation}
                                 onChange={(e) => handleChange('explanation', e.target.value)}
-                                placeholder="Brief explanation of the framework..."
+                                placeholder="Brief explanation of the pattern..."
                             />
                         </div>
                         {/* Pattern Category Selection */}
